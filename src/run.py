@@ -84,8 +84,10 @@ def run_sequential(args, logger):
     args.n_actions = env_info["n_actions"]
     args.state_shape = env_info["state_shape"]
 
-    # g2a parameter setting
-    args.agent_own_state_size = runner.get_agent_own_state_size()
+    # ===================================
+    # qatten parameter setting (only use in qatten)
+    if args.name == 'qatten':
+        args.agent_own_state_size = runner.get_agent_own_state_size()
 
     # Default/Base scheme
     scheme = {
