@@ -7,7 +7,7 @@ PyMARL is [WhiRL](http://whirl.cs.ox.ac.uk)'s framework for deep multi-agent rei
 - [**IQL**: Independent Q-Learning](https://arxiv.org/abs/1511.08779)
 - [**QTRAN**: QTRAN: Learning to Factorize with Transformation for Cooperative Multi-Agent Reinforcement Learning](https://arxiv.org/abs/1905.05408)
 
-#### Extension algorithms
+#### Extension
 
 - [**Qatten**: A General Framework for Cooperative Multiagent Reinforcement](https://arxiv.org/pdf/2002.03939.pdf)
 
