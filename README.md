@@ -10,6 +10,7 @@ PyMARL is [WhiRL](http://whirl.cs.ox.ac.uk)'s framework for deep multi-agent rei
 #### Extension
 
 - [**Qatten**: A General Framework for Cooperative Multiagent Reinforcement](https://arxiv.org/pdf/2002.03939.pdf)
+- [**Commnet**: Learning Multiagent Communication with Backpropagation](https://arxiv.org/abs/1605.07736)
 
 PyMARL is written in PyTorch and uses [SMAC](https://github.com/oxwhirl/smac) as its environment.
 
