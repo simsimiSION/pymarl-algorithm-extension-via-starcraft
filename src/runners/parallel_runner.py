@@ -51,9 +51,6 @@ class ParallelRunner:
     def get_env_info(self):
         return self.env_info
 
-    def get_agent_own_state_size(self):
-        return 4 + self.env_fn.shield_bits_ally + self.env_fn.unit_type_bits
-
     def save_replay(self):
         pass
 

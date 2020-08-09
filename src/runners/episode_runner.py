@@ -34,9 +34,6 @@ class EpisodeRunner:
     def get_env_info(self):
         return self.env.get_env_info()
 
-    def get_agent_own_state_size(self):
-        return 4 + self.env.shield_bits_ally + self.env.unit_type_bits
-
     def save_replay(self):
         self.env.save_replay()
 
