@@ -26,12 +26,17 @@ class QattenMixer(nn.Module):
             self.query_embedding_layers[i] = nn.Sequential(nn.Linear(self.state_dim, self.n_query_embedding_layer1),
                                                            nn.ReLU(),
                                                            nn.Linear(self.n_query_embedding_layer1, self.n_query_embedding_layer2))
+            if self.args.use_cuda:
+                self.query_embedding_layers[i] = self.query_embedding_layers[i].cuda()
         
         self.key_embedding_layers = {}
         for i in range(self.n_attention_head):
-            self.key_embedding_layers[i] = nn.Linear(self.u_dim * self.n_agents, self.n_key_embedding_layer1)
+            self.key_embedding_layers[i] = nn.Linear(self.u_dim, self.n_key_embedding_layer1)
 
-        self.scaled_product_value = th.sqrt(th.tensor(args.n_query_embedding_layer2, dtype=th.float))
+            if self.args.use_cuda:
+                self.key_embedding_layers[i] = self.key_embedding_layers[i].cuda()
+
+        self.scaled_product_value = np.sqrt(args.n_query_embedding_layer2)
 
         self.head_embedding_layer = nn.Sequential(nn.Linear(self.state_dim, self.n_head_embedding_layer1),
                                                   nn.ReLU(),
@@ -44,9 +49,9 @@ class QattenMixer(nn.Module):
 
     def forward(self, agent_qs, states, type='weighted'):
         bs = agent_qs.size(0)
+
         states = states.reshape(-1, self.state_dim)
         us = self._get_us(states)
-        us = us.reshape(-1, self.u_dim * self.n_agents)
         agent_qs = agent_qs.view(-1, 1, self.n_agents)
 
         q_lambda_list = []
@@ -55,9 +60,9 @@ class QattenMixer(nn.Module):
             u_embedding = self.key_embedding_layers[i](us)
 
             # shape: [-1, 1, state_dim]
-            state_embedding = state_embedding.reshape(-1, 1, self.state_dim)
+            state_embedding = state_embedding.reshape(-1, 1, self.n_query_embedding_layer2)
             # shape: [-1, state_dim, n_agent]
-            u_embedding = u_embedding.reshape(-1, self.n_agents, self.state_dim)
+            u_embedding = u_embedding.reshape(-1, self.n_agents, self.n_key_embedding_layer1)
             u_embedding = u_embedding.permute(0, 2, 1)
 
             # shape: [-1, 1, n_agent]
@@ -67,7 +72,7 @@ class QattenMixer(nn.Module):
             q_lambda_list.append(q_lambda)
 
         # shape: [-1, n_attention_head, n_agent]
-        q_lambda_list = th.stack(q_lambda_list, dim=1)
+        q_lambda_list = th.stack(q_lambda_list, dim=1).squeeze(-2)
 
         # shape: [-1, n_agent, n_attention_head]
         q_lambda_list = q_lambda_list.permute(0, 2, 1)
@@ -96,7 +101,7 @@ class QattenMixer(nn.Module):
     def _get_us(self, states):
         agent_own_state_size = self.args.agent_own_state_size
         with th.no_grad():
-            us = states[:, :agent_own_state_size]
+            us = states[:, :agent_own_state_size*self.n_agents].reshape(-1, agent_own_state_size)
         return us
 
 
