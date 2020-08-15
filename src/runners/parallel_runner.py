@@ -5,6 +5,8 @@ from multiprocessing import Pipe, Process
 import numpy as np
 import torch as th
 
+from modules.utils.maven_module import EZAgent as enza
+
 
 # Based (very) heavily on SubprocVecEnv from OpenAI Baselines
 # https://github.com/openai/baselines/blob/master/baselines/common/vec_env/subproc_vec_env.py
@@ -48,6 +50,12 @@ class ParallelRunner:
         self.groups = groups
         self.preprocess = preprocess
 
+        if self.args.name == 'maven':
+            self.noise_distrib = enza(self.args, logger=self.logger)
+
+            if self.args.use_cuda:
+                self.noise_distrib.cuda()
+
     def get_env_info(self):
         return self.env_info
 
@@ -78,6 +86,10 @@ class ParallelRunner:
             pre_transition_data["obs"].append(data["obs"])
 
         self.batch.update(pre_transition_data, ts=0)
+
+        if self.args.name == 'maven':
+            self.noise = self.noise_distrib.sample(self.batch['state'][:,0], False)
+            self.batch.update({"noise": self.noise}, ts=0)
 
         self.t = 0
         self.env_steps_this_run = 0
@@ -187,6 +199,10 @@ class ParallelRunner:
         cur_stats["ep_length"] = sum(episode_lengths) + cur_stats.get("ep_length", 0)
 
         cur_returns.extend(episode_returns)
+
+        # maven
+        if self.args.name == 'maven':
+            self.noise_distrib.update_returns(self.batch['state'][:,0], self.noise, episode_returns, test_mode, self.t_env)
 
         n_test_runs = max(1, self.args.test_nepisode // self.batch_size) * self.batch_size
         if test_mode and (len(self.test_returns) == n_test_runs):

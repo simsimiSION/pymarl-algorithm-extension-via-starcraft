@@ -47,9 +47,8 @@ class QattenMixer(nn.Module):
                                                   nn.Linear(self.n_constrant_value, 1))
 
 
-    def forward(self, agent_qs, states, type='weighted'):
+    def forward(self, agent_qs, states):
         bs = agent_qs.size(0)
-
         states = states.reshape(-1, self.state_dim)
         us = self._get_us(states)
         agent_qs = agent_qs.view(-1, 1, self.n_agents)
@@ -80,9 +79,9 @@ class QattenMixer(nn.Module):
         # shape: [-1, 1, n_attention_head]
         q_h = th.matmul(agent_qs, q_lambda_list)
 
-        if type == 'weighted':
+        if self.args.type == 'weighted':
             # shape: [-1, n_attention_head, 1]
-            w_h = self.head_embedding_layer(states)
+            w_h = th.abs(self.head_embedding_layer(states))
             w_h = w_h.reshape(-1, self.n_head_embedding_layer2, 1)
 
             # shape: [-1, 1]
